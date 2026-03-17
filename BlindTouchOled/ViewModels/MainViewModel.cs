@@ -11,6 +11,7 @@ using System;
 using SkiaSharp.Views.WPF;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Threading;
 using System.Windows.Threading;
 using Microsoft.Win32;
 
@@ -20,6 +21,9 @@ namespace BlindTouchOled.ViewModels
     {
         private readonly DispatcherTimer _throttleTimer;
         private readonly DispatcherTimer _autoConnectTimer;
+        private readonly DispatcherTimer _imageModeSendDebounceTimer;
+        private readonly SemaphoreSlim _imageSendLock = new(1, 1);
+        private bool _imageSendPending = false;
         private bool _needsUpdate = false;
         private int _saveCounter = 0;
         private readonly ISerialService _serialService;
@@ -119,7 +123,7 @@ namespace BlindTouchOled.ViewModels
             _settings.Brightness = value;
             if (IsImageModeApplied)
             {
-                _ = SendAppliedImageOnceAsync();
+                RequestImageModeSend();
             }
             else
             {
@@ -423,6 +427,13 @@ namespace BlindTouchOled.ViewModels
                 _autoConnectTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
                 _autoConnectTimer.Tick += async (s, e) => await MonitorDeviceConnectionAsync();
                 _autoConnectTimer.Start();
+
+                _imageModeSendDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
+                _imageModeSendDebounceTimer.Tick += async (s, e) =>
+                {
+                    _imageModeSendDebounceTimer.Stop();
+                    await SendAppliedImageOnceAsync();
+                };
 
                 // IME繝｢繝ｼ繝牙､画峩
                 _inputMonitor.ModeChanged += (mode) => {
@@ -805,7 +816,7 @@ namespace BlindTouchOled.ViewModels
                     if (IsImageModeApplied)
                     {
                         PreviewImage = SelectedImagePreview;
-                        _ = SendAppliedImageOnceAsync();
+                        RequestImageModeSend();
                     }
                     Log("Image cropped.");
                 }
@@ -885,10 +896,42 @@ namespace BlindTouchOled.ViewModels
                 return;
             }
 
-            byte mappedBrightness = GetMappedBrightness();
-            var data = _renderService.Get1BitRawBytes(_imageBitmap, mappedBrightness);
-            await _serialService.SendDataAsync(data);
-            Log("Image sent to OLED.");
+            _imageSendPending = true;
+            if (!await _imageSendLock.WaitAsync(0))
+            {
+                return;
+            }
+
+            try
+            {
+                while (_imageSendPending)
+                {
+                    _imageSendPending = false;
+                    if (!IsConnected || _imageBitmap == null)
+                    {
+                        break;
+                    }
+
+                    byte mappedBrightness = GetMappedBrightness();
+                    var data = _renderService.Get1BitRawBytes(_imageBitmap, mappedBrightness);
+                    await _serialService.SendDataAsync(data);
+                }
+            }
+            finally
+            {
+                _imageSendLock.Release();
+            }
+
+            if (IsConnected)
+            {
+                Log("Image sent to OLED.");
+            }
+        }
+
+        private void RequestImageModeSend()
+        {
+            _imageModeSendDebounceTimer.Stop();
+            _imageModeSendDebounceTimer.Start();
         }
 
         private bool TryBuildImageBitmap(string path, out SKBitmap bitmap)
@@ -1118,4 +1161,8 @@ namespace BlindTouchOled.ViewModels
         }
     }
 }
+
+
+
+
 

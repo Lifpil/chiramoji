@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
@@ -22,6 +23,7 @@ namespace BlindTouchOled.Services
     public class SerialService : ISerialService
     {
         private SerialPort? _serialPort;
+        private readonly SemaphoreSlim _sendLock = new(1, 1);
         public event Action? ConnectionLost;
 
         public bool IsConnected => _serialPort?.IsOpen ?? false;
@@ -40,7 +42,6 @@ namespace BlindTouchOled.Services
                         return usbPorts;
                     }
 
-                    // Fallback: if WMI is unavailable, avoid obvious onboard legacy ports like COM1.
                     return allPorts
                         .Where(p => !string.Equals(p, "COM1", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
@@ -88,7 +89,6 @@ namespace BlindTouchOled.Services
                         continue;
                     }
 
-                    // Keep USB/UART bridge style serial ports. This excludes built-in COM1 on most PCs.
                     var looksLikeUsbSerial =
                         name.Contains("USB", StringComparison.OrdinalIgnoreCase) ||
                         name.Contains("UART", StringComparison.OrdinalIgnoreCase) ||
@@ -144,7 +144,10 @@ namespace BlindTouchOled.Services
             if (_serialPort != null)
             {
                 if (_serialPort.IsOpen)
+                {
                     _serialPort.Close();
+                }
+
                 _serialPort.Dispose();
                 _serialPort = null;
             }
@@ -159,7 +162,6 @@ namespace BlindTouchOled.Services
 
             try
             {
-                // Accessing line state and queue stats often throws quickly after unplug on Windows USB-Serial.
                 _ = _serialPort.BytesToWrite;
                 _ = _serialPort.BytesToRead;
                 _ = _serialPort.CDHolding;
@@ -183,7 +185,6 @@ namespace BlindTouchOled.Services
             }
             catch
             {
-                // Keep serial layer safe and non-throwing.
             }
         }
 
@@ -194,19 +195,32 @@ namespace BlindTouchOled.Services
                 return;
             }
 
-            if (IsConnected && _serialPort != null && _serialPort.IsOpen)
+            await _sendLock.WaitAsync();
+            try
             {
-                // ログ: 先頭バイト（明るさ）とデータサイズを記録
+                if (!IsConnected || _serialPort == null || !_serialPort.IsOpen)
+                {
+                    return;
+                }
+
                 string logMsg = $"Serial TX: {data.Length} bytes, brightness_byte={data[0]}";
                 BlindTouchOled.ViewModels.MainViewModel.FileLog(logMsg);
 
                 try
                 {
-                    using (var cts = new System.Threading.CancellationTokenSource(1000))
-                    {
-                        await _serialPort.BaseStream.WriteAsync(data, 0, data.Length, cts.Token);
-                        await _serialPort.BaseStream.FlushAsync(cts.Token);
-                    }
+                    using var cts = new CancellationTokenSource(1500);
+                    await _serialPort.BaseStream.WriteAsync(data, 0, data.Length, cts.Token);
+                    await _serialPort.BaseStream.FlushAsync(cts.Token);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Serial Send Timeout: {ex.Message}");
+                    BlindTouchOled.ViewModels.MainViewModel.FileLog($"SerialService Timeout: {ex.Message}");
+                }
+                catch (TimeoutException ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Serial Send Timeout: {ex.Message}");
+                    BlindTouchOled.ViewModels.MainViewModel.FileLog($"SerialService Timeout: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
@@ -214,6 +228,10 @@ namespace BlindTouchOled.Services
                     BlindTouchOled.ViewModels.MainViewModel.FileLog($"SerialService Exception: {ex.Message}");
                     HandleConnectionLost();
                 }
+            }
+            finally
+            {
+                _sendLock.Release();
             }
         }
     }

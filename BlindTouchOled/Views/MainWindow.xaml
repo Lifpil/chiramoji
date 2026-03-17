@@ -835,6 +835,7 @@
                                                         <DataTrigger Binding="{Binding IsImageModeApplied}" Value="True">
                                                             <Setter Property="Content" Value="解除"/>
                                                             <Setter Property="Background" Value="#FFB44E44"/>
+                                                            <Setter Property="Foreground" Value="White"/>
                                                             <Setter Property="BorderBrush" Value="#FFA4453C"/>
                                                             <Setter Property="IsEnabled" Value="True"/>
                                                         </DataTrigger>
@@ -909,3 +910,6 @@
         </Grid>
     </Grid>
 </Window>
+
+
+
