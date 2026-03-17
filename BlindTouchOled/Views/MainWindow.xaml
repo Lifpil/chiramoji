@@ -1,0 +1,911 @@
+﻿<Window x:Class="BlindTouchOled.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:BlindTouchOled.ViewModels"
+        mc:Ignorable="d"
+        Icon="/Assets/ChiraMoji.ico"
+        Title="{Binding Title}" Width="1020" Height="840"
+        WindowStyle="None" AllowsTransparency="False" Background="#FFF9F8F5"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterScreen"
+        MinWidth="520"
+        MinHeight="280"
+        MaxWidth="1200"
+        MaxHeight="940"
+        FontFamily="Yu Gothic UI, Meiryo UI, Segoe UI"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="60"
+                      GlassFrameThickness="0"
+                      CornerRadius="14"
+                      ResizeBorderThickness="8"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#FF6F61"/>
+        <SolidColorBrush x:Key="PrimarySoftBrush" Color="#FFFFE3DD"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#E85D5D"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#FFF8D7D1"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FF3B2F2F"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#FF7F7070"/>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="18,11"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FFE2A198"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.12"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.84"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FFD8D8D8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TitleIconButton" TargetType="ToggleButton">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#FFFCEBE6"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#FFFFE3DD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="18" Direction="-90" ShadowDepth="3" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <Style x:Key="DisplayOptionCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="Box"
+                                    Width="20"
+                                    Height="20"
+                                    CornerRadius="6"
+                                    BorderThickness="1.6"
+                                    BorderBrush="#FFD5B5AF"
+                                    Background="#FFFFFBFA"
+                                    VerticalAlignment="Center"/>
+                            <Path x:Name="CheckMark"
+                                  Grid.Column="0"
+                                  Data="M 1 4 L 4 7 L 9 1"
+                                  Width="10"
+                                  Height="8"
+                                  Stretch="Fill"
+                                  Stroke="White"
+                                  StrokeThickness="2"
+                                  StrokeEndLineCap="Round"
+                                  StrokeStartLineCap="Round"
+                                  Visibility="Collapsed"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"/>
+                            <ContentPresenter Grid.Column="1"
+                                              Margin="8,0,0,0"
+                                              VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="#FFE39D92"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SettingsCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="Root"
+                                Background="#FFFFFAF8"
+                                BorderBrush="#FFF3D8D2"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="10,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="Box"
+                                        Width="16"
+                                        Height="16"
+                                        CornerRadius="5"
+                                        BorderBrush="#FFD5B5AF"
+                                        BorderThickness="1.4"
+                                        Background="White"
+                                        VerticalAlignment="Center"/>
+                                <Path x:Name="Mark"
+                                      Grid.Column="0"
+                                      Data="M 1 4 L 4 7 L 9 1"
+                                      Width="10"
+                                      Height="8"
+                                      Stretch="Fill"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Visibility="Collapsed"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Center"/>
+                                <ContentPresenter Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="#FFE6B3A9"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="#FFE39D92"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#FFFFF1EE"/>
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="Mark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PopupActionButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="11"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.93"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.86"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="BorderBrush" Value="#FFF5CCC3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FFFFFBFA"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="OuterBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="36"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      Content="{TemplateBinding SelectionBoxItem}"/>
+                                    <Border Grid.Column="1" Background="#FFFFEFEA" CornerRadius="0,12,12,0">
+                                        <Path Data="M 0 0 L 4 4 L 8 0"
+                                              Stroke="#FF9C6D64"
+                                              StrokeThickness="1.7"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            <ToggleButton x:Name="ToggleButton"
+                                          Opacity="0"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+                            <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                <Border Margin="0,4,0,0"
+                                        Background="White"
+                                        BorderBrush="#FFF5CCC3"
+                                        BorderThickness="1"
+                                        CornerRadius="12">
+                                    <ScrollViewer MaxHeight="260">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="#FFEAA79A"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" CornerRadius="8" Margin="6,3">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#FFFFF1EE"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#FFFFE3DD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
+        <Style x:Key="SystemLogListBox" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        </Style>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Grid ClipToBounds="True">
+        <Border Background="#FFFFFAF8"/>
+        <Canvas IsHitTestVisible="False">
+            <Ellipse Width="320" Height="320" Fill="#FFFFE8D9" Canvas.Left="-80" Canvas.Top="-100"/>
+            <Ellipse Width="220" Height="220" Fill="#FFE6F7F3" Canvas.Right="-60" Canvas.Bottom="-80"/>
+        </Canvas>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#FFFFFFFF" BorderThickness="0,0,0,1" BorderBrush="#FFF4D8D2" Height="60">
+                <Grid Margin="20,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="ちらもじ" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center"/>
+                        <Border Background="{StaticResource PrimarySoftBrush}" CornerRadius="9" Padding="8,3" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <Border.RenderTransform>
+                                <TranslateTransform Y="4"/>
+                            </Border.RenderTransform>
+                            <TextBlock Text="{Binding AppVersion}" FontSize="10" Foreground="{StaticResource PrimaryBrush}" FontWeight="Bold"/>
+                        </Border>
+                        <!-- Monitor status label intentionally hidden -->
+                    </StackPanel>
+
+                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <ToggleButton x:Name="SettingsToggle" Style="{StaticResource TitleIconButton}">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16" Foreground="{StaticResource TextSecondary}"/>
+                        </ToggleButton>
+                        <Button x:Name="BtnMinimize" Click="BtnMinimize_Click" Width="40" Height="40" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE921;" FontSize="13" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,3,0,0"/>
+                        </Button>
+                        <Button x:Name="BtnClose" Click="BtnClose_Click" Width="40" Height="40" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8BB;" FontSize="12" Foreground="{StaticResource ErrorBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+
+                    <Popup IsOpen="{Binding IsChecked, ElementName=SettingsToggle, Mode=TwoWay}"
+                           PlacementTarget="{Binding ElementName=SettingsToggle}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True"
+                           PopupAnimation="Slide"
+                           VerticalOffset="10"
+                           HorizontalOffset="-260">
+                        <Border Width="360"
+                                Background="White"
+                                BorderBrush="#FFF4D8D2"
+                                BorderThickness="1"
+                                CornerRadius="16"
+                                Padding="18">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="18" ShadowDepth="3" Opacity="0.20"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="設定" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,12"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="プレビューを表示" IsChecked="{Binding ShowPreview}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="表示オプションを表示" IsChecked="{Binding ShowInputMode}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="接続カードを表示" IsChecked="{Binding ShowConnectivity}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="画像表示を表示" IsChecked="{Binding ShowImageSection}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="システムログを表示" IsChecked="{Binding ShowLogs}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="自動的にデバイスと接続する" IsChecked="{Binding AutoConnect}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="Windows起動時に自動起動" IsChecked="{Binding StartWithWindows}"/>
+                                <CheckBox Style="{StaticResource SettingsCheckBox}" Content="×ボタンでアプリを終了しない" IsChecked="{Binding CloseButtonMinimizesToTray}" Margin="0,0,0,12"/>
+
+                                <Separator Margin="0,0,0,12"/>
+                                <Grid Margin="0,0,0,10">
+                                    <TextBlock Text="アプリバージョン" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding AppVersion}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,12">
+                                    <TextBlock Text="ファームウェア" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding FirmwareVersion}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                </Grid>
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0"
+                                            Content="アップデート確認"
+                                            Command="{Binding UpdateFirmwareCommand}"
+                                            Style="{StaticResource PopupActionButton}"/>
+                                    <Button Grid.Column="2"
+                                            Content="アプリを終了"
+                                            Command="{Binding ExitApplicationCommand}"
+                                            Style="{StaticResource PopupActionButton}"
+                                            Background="#FFB44E44"
+                                            BorderBrush="#FFA4453C"/>
+                                </Grid>
+                                <TextBlock Text="{Binding UpdateStatus}"
+                                           Margin="0,8,0,0"
+                                           FontStyle="Italic"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Style="{StaticResource ModernCard}"
+                        Visibility="{Binding ShowPreview, Converter={StaticResource BoolToVis}}"
+                        HorizontalAlignment="Center"
+                        Width="480"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="画面プレビュー" FontSize="13" FontWeight="Bold" Margin="0,0,0,10" HorizontalAlignment="Center" Foreground="{StaticResource TextSecondary}"/>
+                        <Border CornerRadius="8" Padding="8" HorizontalAlignment="Center">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#FF61666F"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                            <Setter Property="Background" Value="#FF22252A"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid Width="384" Height="96">
+                                <Image Source="{Binding PreviewImage}" Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor">
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <TextBlock Text="接続してください"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FFF1F3F6"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Width="900" Margin="0,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                        <Border x:Name="DisplayOptionsCard"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                VerticalAlignment="Top">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource ModernCard}">
+                                    <Setter Property="Padding" Value="20"/>
+                                    <Setter Property="Margin" Value="0,0,15,0"/>
+                                    <Setter Property="Grid.Column" Value="0"/>
+                                    <Setter Property="Grid.ColumnSpan" Value="1"/>
+                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                    <Setter Property="Width" Value="Auto"/>
+                                    <Setter Property="Visibility" Value="{Binding ShowInputMode, Converter={StaticResource BoolToVis}}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseNarrowDisplayCard}" Value="True">
+                                            <Setter Property="Grid.ColumnSpan" Value="2"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="Width" Value="480"/>
+                                            <Setter Property="Margin" Value="0,0,0,0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="表示オプション" FontSize="16" FontWeight="Bold" Margin="0,0,0,15" Foreground="{StaticResource TextPrimary}"/>
+
+                                <TextBlock Text="フォント" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,5"/>
+                                <ComboBox Style="{StaticResource ModernComboBox}"
+                                          ItemsSource="{Binding AvailableFonts}"
+                                          SelectedItem="{Binding SelectedFont}"
+                                          Height="38"
+                                          Margin="0,0,0,15"/>
+
+                                <DockPanel Margin="0,0,0,5">
+                                    <TextBlock Text="文字サイズ" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding CurrentFontSize, StringFormat={}{0:F0}px}" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12"/>
+                                </DockPanel>
+                                <Slider Minimum="8" Maximum="60" Value="{Binding CurrentFontSize}" Margin="0,0,0,15"/>
+
+                                <DockPanel Margin="0,0,0,5">
+                                    <TextBlock Text="明るさ" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="{Binding CurrentBrightness, StringFormat={}{0:F0}/255}" HorizontalAlignment="Right" FontWeight="Bold" FontSize="12"/>
+                                </DockPanel>
+                                <Slider Minimum="0" Maximum="255" Value="{Binding CurrentBrightness}" Margin="0,0,0,24"/>
+
+                                <StackPanel Margin="0,0,0,12">
+                                    <CheckBox Style="{StaticResource DisplayOptionCheckBox}"
+                                              Content="Enterで表示をすぐにクリア"
+                                              IsChecked="{Binding IsImmediateClear}"
+                                              Margin="0,0,0,4"/>
+                                    <TextBlock Text="Enterキーを押したタイミングで、表示中のテキストを自動で消去します。"
+                                               FontSize="11"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               Margin="28,0,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,0">
+                                    <CheckBox Style="{StaticResource DisplayOptionCheckBox}"
+                                              Content="クリック時に表示をリセット"
+                                              IsChecked="{Binding IsResetOnClick}"
+                                              Margin="0,0,0,4"/>
+                                    <TextBlock Text="画面をクリックしたときに、表示位置と内容を初期状態に戻します。"
+                                               FontSize="11"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               Margin="28,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Grid.Row="0"
+                              VerticalAlignment="Top">
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Setter Property="Grid.Column" Value="1"/>
+                                    <Setter Property="Grid.ColumnSpan" Value="1"/>
+                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                    <Setter Property="Width" Value="Auto"/>
+                                    <Setter Property="Margin" Value="15,0,0,0"/>
+                                    <Setter Property="Height" Value="{Binding ActualHeight, ElementName=DisplayOptionsCard}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAnyRightSectionVisible}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding UseCenteredRightColumn}" Value="True">
+                                            <Setter Property="Grid.Column" Value="0"/>
+                                            <Setter Property="Grid.ColumnSpan" Value="2"/>
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="Width" Value="480"/>
+                                            <Setter Property="Margin" Value="0,0,0,0"/>
+                                            <Setter Property="Height" Value="Auto"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0"
+                                    Style="{StaticResource ModernCard}"
+                                    Padding="20"
+                                    Margin="0,0,0,12"
+                                    Visibility="{Binding ShowConnectivity, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                    <TextBlock Text="接続" FontSize="16" FontWeight="Bold" Margin="0,0,0,14" Foreground="{StaticResource TextPrimary}"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Height="38"
+                                                Margin="0,0,6,0"
+                                                Padding="12,0"
+                                                Background="#FFFFFBFA"
+                                                BorderBrush="#FFF5CCC3"
+                                                BorderThickness="1"
+                                                CornerRadius="12">
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       FontSize="13">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="デバイスを接続してください"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                <Setter Property="Text" Value="接続完了"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                        <Button Grid.Column="1"
+                                                Margin="6,0,0,0"
+                                                Command="{Binding ToggleConnectionCommand}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                                                    <Setter Property="Content" Value="接続"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                            <Setter Property="Content" Value="切断"/>
+                                                            <Setter Property="Background" Value="#FFB44E44"/>
+                                                            <Setter Property="BorderBrush" Value="#FFA4453C"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding AutoConnect}" Value="True">
+                                                            <Setter Property="Content" Value="自動"/>
+                                                            <Setter Property="Background" Value="#FFE2E2E2"/>
+                                                            <Setter Property="BorderBrush" Value="#FFD2D2D2"/>
+                                                            <Setter Property="Foreground" Value="#FF7A7A7A"/>
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Row="1"
+                                    Style="{StaticResource ModernCard}"
+                                    Padding="20"
+                                    Margin="0,0,0,12"
+                                    VerticalAlignment="Stretch"
+                                    Visibility="{Binding ShowImageSection, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                    <TextBlock Text="画像表示" FontSize="16" FontWeight="Bold" Margin="0,0,0,12" Foreground="{StaticResource TextPrimary}"/>
+                                    <Border Background="#FFFFFBFA"
+                                            BorderBrush="#FFF5CCC3"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="8"
+                                            Margin="0,0,0,10">
+                                        <Grid>
+                                            <Image Source="{Binding SelectedImagePreview}"
+                                                   Height="82"
+                                                   Stretch="Uniform"
+                                                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                            <TextBlock Text="画像が未選択です"
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       FontSize="12"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasSelectedImage}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Button Width="22"
+                                                    Height="22"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,2,2,0"
+                                                    Command="{Binding ClearSelectedImageCommand}"
+                                                    ToolTip="画像を破棄"
+                                                    Background="#CC232323"
+                                                    Foreground="White"
+                                                    BorderBrush="#FF3A3A3A"
+                                                    BorderThickness="1"
+                                                    FontWeight="Bold"
+                                                    FontSize="12"
+                                                    Content="×"
+                                                    Cursor="Hand">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}"
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="11">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasSelectedImage}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#E6424242"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0"
+                                                Content="画像を選択"
+                                                Command="{Binding SelectImageCommand}"
+                                                Style="{StaticResource ModernButton}"
+                                                Background="#FFFFEFEA"
+                                                Foreground="#FF9C6D64"
+                                                BorderBrush="#FFF5CCC3"/>
+                                        <Button Grid.Column="2"
+                                                Content="トリミング"
+                                                Command="{Binding CropImageCommand}"
+                                                IsEnabled="{Binding HasSelectedImage}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                                                    <Setter Property="Background" Value="#FFFFEFEA"/>
+                                                    <Setter Property="Foreground" Value="#FF9C6D64"/>
+                                                    <Setter Property="BorderBrush" Value="#FFF5CCC3"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Background" Value="#FFE2E2E2"/>
+                                                            <Setter Property="Foreground" Value="#FF7A7A7A"/>
+                                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            <Setter Property="BorderThickness" Value="0"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Grid.Column="4"
+                                                Command="{Binding ToggleImageModeCommand}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                                                    <Setter Property="Content" Value="適用"/>
+                                                    <Setter Property="IsEnabled" Value="{Binding HasSelectedImage}"/>
+                                                    <Setter Property="Background" Value="#FFFFEFEA"/>
+                                                    <Setter Property="Foreground" Value="#FF9C6D64"/>
+                                                    <Setter Property="BorderBrush" Value="#FFF5CCC3"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Background" Value="#FFE2E2E2"/>
+                                                            <Setter Property="Foreground" Value="#FF7A7A7A"/>
+                                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            <Setter Property="BorderThickness" Value="0"/>
+                                                        </Trigger>
+                                                        <DataTrigger Binding="{Binding IsImageModeApplied}" Value="True">
+                                                            <Setter Property="Content" Value="解除"/>
+                                                            <Setter Property="Background" Value="#FFB44E44"/>
+                                                            <Setter Property="BorderBrush" Value="#FFA4453C"/>
+                                                            <Setter Property="IsEnabled" Value="True"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Row="2" VerticalAlignment="Stretch">
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource ModernCard}">
+                                        <Setter Property="Padding" Value="20"/>
+                                        <Setter Property="Margin" Value="0,0,0,0"/>
+                                        <Setter Property="Visibility" Value="{Binding ShowRightLocalLog, Converter={StaticResource BoolToVis}}"/>
+                                    </Style>
+                                </Border.Style>
+                                <DockPanel LastChildFill="True">
+                                    <TextBlock DockPanel.Dock="Top" Text="システムログ" FontSize="14" FontWeight="Bold" Margin="0,0,0,10" Foreground="{StaticResource TextPrimary}"/>
+                                    <ListBox Style="{StaticResource SystemLogListBox}" ItemsSource="{Binding LogMessages}">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Foreground="{StaticResource TextSecondary}" Margin="0,1"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Style="{StaticResource ModernCard}"
+                                Padding="20"
+                                Margin="0,12,0,0"
+                                Visibility="{Binding ShowBottomLog, Converter={StaticResource BoolToVis}}">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Top" Text="システムログ" FontSize="14" FontWeight="Bold" Margin="0,0,0,10" Foreground="{StaticResource TextPrimary}"/>
+                                <ListBox Style="{StaticResource SystemLogListBox}" ItemsSource="{Binding LogMessages}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" Foreground="{StaticResource TextSecondary}" Margin="0,1"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
+
+                        <Border Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Style="{StaticResource ModernCard}"
+                                Padding="20"
+                                Width="480"
+                                HorizontalAlignment="Center"
+                                Margin="0,12,0,0"
+                                Visibility="{Binding ShowCenteredLog, Converter={StaticResource BoolToVis}}">
+                            <DockPanel LastChildFill="True">
+                                <TextBlock DockPanel.Dock="Top" Text="システムログ" FontSize="14" FontWeight="Bold" Margin="0,0,0,10" Foreground="{StaticResource TextPrimary}"/>
+                                <ListBox Style="{StaticResource SystemLogListBox}" ItemsSource="{Binding LogMessages}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" Foreground="{StaticResource TextSecondary}" Margin="0,1"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

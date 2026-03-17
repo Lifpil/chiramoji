@@ -1,0 +1,16 @@
+﻿# Build artifacts
+**/bin/
+**/obj/
+dist/
+publish/
+debug/
+
+# Logs/temp
+app_debug.txt
+BlindTouchOled/app_debug.txt
+*.log
+*.tmp
+test.txt
+
+# IDE
+.vs/
