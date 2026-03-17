@@ -64,7 +64,7 @@ def expand_1bit_to_4bit(src: ptr8, dst: ptr8, brightness_ptr: ptr8, frame_ptr: p
 spi = machine.SPI(0, baudrate=10000000)
 oled = SH1122(256, 64, spi, machine.Pin(20, machine.Pin.OUT), machine.Pin(21, machine.Pin.OUT), machine.Pin(17, machine.Pin.OUT))
 oled.init_display()
-sys.stdout.write("FW:v1.0.1\n")
+sys.stdout.write("FW:v1.0.2\n")
 sys.stdout.flush()
 
 def show_idle_screen():
@@ -111,6 +111,7 @@ while True:
         # 繧ｿ繧､繝繧｢繧ｦ繝・ 荳榊ｮ悟・縺ｪ繝舌ャ繝輔ぃ繧堤ｴ譽・＠縺ｦ蜷梧悄繧偵Μ繧ｻ繝・ヨ
         if len(buffer) > 0:
             buffer = bytearray()
+
 
 
 

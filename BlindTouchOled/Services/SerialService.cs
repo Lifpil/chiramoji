@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
 namespace BlindTouchOled.Services
 {
@@ -16,6 +16,7 @@ namespace BlindTouchOled.Services
         bool Connect(string portName, int baudRate = 115200);
         void Disconnect();
         bool IsConnected { get; }
+        string ReadFirmwareVersion(int timeoutMs = 1200);
         event Action? ConnectionLost;
         Task SendDataAsync(byte[] data);
     }
@@ -136,6 +137,36 @@ namespace BlindTouchOled.Services
             {
                 Disconnect();
                 return false;
+            }
+        }
+
+        public string ReadFirmwareVersion(int timeoutMs = 1200)
+        {
+            if (!IsConnected || _serialPort == null || !_serialPort.IsOpen)
+            {
+                return "未接続";
+            }
+
+            try
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var text = string.Empty;
+                while (sw.ElapsedMilliseconds < timeoutMs)
+                {
+                    Thread.Sleep(80);
+                    text += _serialPort.ReadExisting();
+                    var m = Regex.Match(text, @"FW\s*:\s*v?(\d+\.\d+\.\d+)", RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        return $"v{m.Groups[1].Value}";
+                    }
+                }
+
+                return "不明";
+            }
+            catch
+            {
+                return "不明";
             }
         }
 

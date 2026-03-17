@@ -305,10 +305,10 @@ namespace BlindTouchOled.ViewModels
         }
 
         [ObservableProperty]
-        private string _appVersion = "v1.0.1";
+        private string _appVersion = "v1.0.2";
 
         [ObservableProperty]
-        private string _firmwareVersion = "Detecting...";
+        private string _firmwareVersion = "未接続";
 
         [ObservableProperty]
         private string _updateStatus = "Ready";
@@ -589,6 +589,7 @@ namespace BlindTouchOled.ViewModels
                 _serialService.Disconnect();
                 Title = "Blind Touch OLED";
                 Log("Disconnected from device.");
+                FirmwareVersion = "未接続";
             }
             else
             {
@@ -604,6 +605,7 @@ namespace BlindTouchOled.ViewModels
                         {
                             Title = "Connected";
                             Log("Successfully connected to the device.");
+                            await UpdateFirmwareVersionFromDeviceAsync();
                             if (IsImageModeApplied)
                             {
                                 await SendAppliedImageOnceAsync();
@@ -683,6 +685,7 @@ namespace BlindTouchOled.ViewModels
                         _settingsService.Save(_settings);
                         Title = "Connected";
                         Log(silent ? "Auto-connected to device." : "Successfully connected to the device.");
+                        await UpdateFirmwareVersionFromDeviceAsync();
                         if (IsImageModeApplied)
                         {
                             await SendAppliedImageOnceAsync();
@@ -719,6 +722,7 @@ namespace BlindTouchOled.ViewModels
                     IsConnected = false;
                     Title = "Blind Touch OLED";
                     Log("Device disconnected.");
+                FirmwareVersion = "未接続";
                     return;
                 }
 
@@ -729,6 +733,7 @@ namespace BlindTouchOled.ViewModels
                     IsConnected = false;
                     Title = "Blind Touch OLED";
                     Log("Device disconnected.");
+                FirmwareVersion = "未接続";
                     return;
                 }
             }
@@ -736,6 +741,23 @@ namespace BlindTouchOled.ViewModels
             await TryAutoConnectAsync();
         }
 
+        private async Task UpdateFirmwareVersionFromDeviceAsync()
+        {
+            if (!IsConnected)
+            {
+                FirmwareVersion = "未接続";
+                return;
+            }
+
+            var detected = await Task.Run(() => _serialService.ReadFirmwareVersion(1800));
+            if (string.IsNullOrWhiteSpace(detected))
+            {
+                detected = "不明";
+            }
+
+            FirmwareVersion = detected;
+            Log($"Firmware version: {FirmwareVersion}");
+        }
         private void OnSerialConnectionLost()
         {
             App.Current.Dispatcher.BeginInvoke(() =>
@@ -748,6 +770,7 @@ namespace BlindTouchOled.ViewModels
                 IsConnected = false;
                 Title = "Blind Touch OLED";
                 Log("Device disconnected.");
+                FirmwareVersion = "未接続";
             });
         }
 
@@ -1198,17 +1221,3 @@ namespace BlindTouchOled.ViewModels
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

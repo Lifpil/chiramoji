@@ -437,7 +437,7 @@
                                     <TextBlock Text="{Binding AppVersion}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,12">
-                                    <TextBlock Text="ファームウェア" Foreground="{StaticResource TextSecondary}"/>
+                                    <TextBlock Text="ファームウェアバージョン" Foreground="{StaticResource TextSecondary}"/>
                                     <TextBlock Text="{Binding FirmwareVersion}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                                 </Grid>
                                 <Grid Margin="0,4,0,0">
@@ -786,7 +786,7 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="10"/>
                                             <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <Button Grid.Column="0"
@@ -910,7 +910,3 @@
         </Grid>
     </Grid>
 </Window>
-
-
-
-

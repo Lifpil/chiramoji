@@ -2,7 +2,7 @@
   #define MyAppName "繝悶Λ繧､繝ｳ繝峨ち繝・メ OLED"
 #endif
 #ifndef MyAppVersion
-  #define MyAppVersion "1.0.1"
+  #define MyAppVersion "1.0.2"
 #endif
 #ifndef MyAppPublisher
   #define MyAppPublisher "ChiraMoji"
@@ -55,4 +55,5 @@ japanese.SelectDirDesc=繧､繝ｳ繧ｹ繝医・繝ｫ蜈医ヵ繧ｩ繝ｫ繝
 japanese.SelectTasksDesc=蠢・ｦ√↑繧ｪ繝励す繝ｧ繝ｳ繧帝∈謚槭＠縺ｦ縺上□縺輔＞縲・
 japanese.FinishedHeadingLabel=繧､繝ｳ繧ｹ繝医・繝ｫ縺悟ｮ御ｺ・＠縺ｾ縺励◆
 japanese.FinishedLabel= [name] 縺ｮ繧､繝ｳ繧ｹ繝医・繝ｫ縺悟ｮ御ｺ・＠縺ｾ縺励◆縲・n%n縲悟ｮ御ｺ・阪ｒ謚ｼ縺吶→繧ｻ繝・ヨ繧｢繝・・繧堤ｵゆｺ・＠縺ｾ縺吶・
+
 
