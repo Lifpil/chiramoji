@@ -1,8 +1,8 @@
-#ifndef MyAppName
-  #define MyAppName "ブラインドタッチ OLED"
+﻿#ifndef MyAppName
+  #define MyAppName "繝悶Λ繧､繝ｳ繝峨ち繝・メ OLED"
 #endif
 #ifndef MyAppVersion
-  #define MyAppVersion "1.0.0"
+  #define MyAppVersion "1.0.1"
 #endif
 #ifndef MyAppPublisher
   #define MyAppPublisher "ChiraMoji"
@@ -37,7 +37,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "デスクトップにショートカットを作成する"; GroupDescription: "追加オプション:"; Flags: unchecked
+Name: "desktopicon"; Description: "繝・せ繧ｯ繝医ャ繝励↓繧ｷ繝ｧ繝ｼ繝医き繝・ヨ繧剃ｽ懈・縺吶ｋ"; GroupDescription: "霑ｽ蜉繧ｪ繝励す繝ｧ繝ｳ:"; Flags: unchecked
 
 [Files]
 Source: "..\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -47,11 +47,12 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "今すぐ {#MyAppName} を起動する"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [Messages]
-japanese.WelcomeLabel2=このセットアップでは、[name] をお使いのPCにインストールします。%n%n「次へ」をクリックすると進みます。
-japanese.SelectDirDesc=インストール先フォルダを確認してください。
-japanese.SelectTasksDesc=必要なオプションを選択してください。
-japanese.FinishedHeadingLabel=インストールが完了しました
-japanese.FinishedLabel= [name] のインストールが完了しました。%n%n「完了」を押すとセットアップを終了します。
+japanese.WelcomeLabel2=縺薙・繧ｻ繝・ヨ繧｢繝・・縺ｧ縺ｯ縲ーname] 繧偵♀菴ｿ縺・・PC縺ｫ繧､繝ｳ繧ｹ繝医・繝ｫ縺励∪縺吶・n%n縲梧ｬ｡縺ｸ縲阪ｒ繧ｯ繝ｪ繝・け縺吶ｋ縺ｨ騾ｲ縺ｿ縺ｾ縺吶・
+japanese.SelectDirDesc=繧､繝ｳ繧ｹ繝医・繝ｫ蜈医ヵ繧ｩ繝ｫ繝繧堤｢ｺ隱阪＠縺ｦ縺上□縺輔＞縲・
+japanese.SelectTasksDesc=蠢・ｦ√↑繧ｪ繝励す繝ｧ繝ｳ繧帝∈謚槭＠縺ｦ縺上□縺輔＞縲・
+japanese.FinishedHeadingLabel=繧､繝ｳ繧ｹ繝医・繝ｫ縺悟ｮ御ｺ・＠縺ｾ縺励◆
+japanese.FinishedLabel= [name] 縺ｮ繧､繝ｳ繧ｹ繝医・繝ｫ縺悟ｮ御ｺ・＠縺ｾ縺励◆縲・n%n縲悟ｮ御ｺ・阪ｒ謚ｼ縺吶→繧ｻ繝・ヨ繧｢繝・・繧堤ｵゆｺ・＠縺ｾ縺吶・
+

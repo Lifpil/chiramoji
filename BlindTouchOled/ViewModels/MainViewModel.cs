@@ -14,6 +14,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Threading;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace BlindTouchOled.ViewModels
 {
@@ -32,6 +33,7 @@ namespace BlindTouchOled.ViewModels
         private readonly IInputMonitor _inputMonitor;
         private readonly Models.AppSettings _settings;
         private readonly Services.KeyloggerService _keylogger;
+        private readonly UpdateService _updateService = new();
 
         [ObservableProperty]
         private string _title = "Blind Touch OLED";
@@ -303,7 +305,7 @@ namespace BlindTouchOled.ViewModels
         }
 
         [ObservableProperty]
-        private string _appVersion = "v1.0.0";
+        private string _appVersion = "v1.0.1";
 
         [ObservableProperty]
         private string _firmwareVersion = "Detecting...";
@@ -311,6 +313,9 @@ namespace BlindTouchOled.ViewModels
         [ObservableProperty]
         private string _updateStatus = "Ready";
 
+        private const string UpdateRepoOwner = "Lifpil";
+        private const string UpdateRepoName = "chiramoji";
+        
         // ---- 繧ｭ繝ｼ繝ｭ繧ｬ繝ｼ繝｢繝ｼ繝・----
         private bool _isKeyloggerMode = true;
         public bool IsKeyloggerMode
@@ -531,9 +536,41 @@ namespace BlindTouchOled.ViewModels
         [RelayCommand]
         private async Task UpdateFirmwareAsync()
         {
-            UpdateStatus = "Searching for updates...";
-            await Task.Delay(1000);
-            UpdateStatus = "Current firmware is up to date.";
+            UpdateStatus = "アップデートを確認中...";
+            try
+            {
+                var result = await _updateService.CheckAsync(AppVersion, UpdateRepoOwner, UpdateRepoName);
+                FirmwareVersion = result.FirmwareVersionText;
+                UpdateStatus = result.StatusMessage;
+
+                if (!string.IsNullOrWhiteSpace(result.SoftwareUrlToOpen))
+                {
+                    OpenUrl(result.SoftwareUrlToOpen);
+                }
+                if (!string.IsNullOrWhiteSpace(result.FirmwareUrlToOpen))
+                {
+                    OpenUrl(result.FirmwareUrlToOpen);
+                }
+
+                foreach (var message in result.LogMessages)
+                {
+                    Log(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus = "アップデート確認中にエラーが発生しました。";
+                Log($"Update check error: {ex.Message}");
+            }
+        }
+
+        private static void OpenUrl(string url)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
         }
 
         [RelayCommand]
@@ -1161,6 +1198,15 @@ namespace BlindTouchOled.ViewModels
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 

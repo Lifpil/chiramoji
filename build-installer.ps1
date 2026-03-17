@@ -1,7 +1,7 @@
 ﻿param(
     [string]$Configuration = "Release",
     [string]$Runtime = "win-x64",
-    [string]$Version = "1.0.0"
+    [string]$Version = "1.0.1"
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,3 +43,4 @@ Write-Host "== 3/3 Build setup.exe ==" -ForegroundColor Cyan
 $distDir = Join-Path $projectRoot "dist"
 Write-Host ""
 Write-Host "Done. Installer output: $distDir" -ForegroundColor Green
+

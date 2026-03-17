@@ -69,7 +69,7 @@ def show_idle_screen():
     oled.framebuf.fill(0)
     # MicroPython built-in text is ASCII-only, so use romanized label here.
     oled.framebuf.text("CHIRAMOJI", 56, 20, 15)
-    oled.framebuf.text("v1.0.0", 92, 36, 15)
+    oled.framebuf.text("v1.0.1", 92, 36, 15)
     oled.show()
 
 show_idle_screen()
@@ -109,4 +109,5 @@ while True:
         # 繧ｿ繧､繝繧｢繧ｦ繝・ 荳榊ｮ悟・縺ｪ繝舌ャ繝輔ぃ繧堤ｴ譽・＠縺ｦ蜷梧悄繧偵Μ繧ｻ繝・ヨ
         if len(buffer) > 0:
             buffer = bytearray()
+
 
