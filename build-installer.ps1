@@ -1,15 +1,15 @@
 ﻿param(
     [string]$Configuration = "Release",
     [string]$Runtime = "win-x64",
-    [string]$Version = "1.0.2"
+    [string]$Version = "1.0.0"
 )
 
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$projectFile = Join-Path $projectRoot "BlindTouchOled\BlindTouchOled.csproj"
+$projectFile = Join-Path $projectRoot "chiramoji\\chiramoji.csproj"
 $publishDir = Join-Path $projectRoot "publish"
-$issFile = Join-Path $projectRoot "installer\BlindTouchOled.iss"
+$issFile = Join-Path $projectRoot "installer\chiramoji.iss"
 
 Write-Host "== 1/3 Build publish output ==" -ForegroundColor Cyan
 if (Test-Path $publishDir) {
